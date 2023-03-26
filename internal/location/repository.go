@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"github.com/segmentio/kafka-go"
 	"log"
+	"time"
 )
 
 type Repository struct {
@@ -19,9 +20,12 @@ func (r Repository) GetLocation(ctx context.Context) (*Location, error) {
 	log.Printf("message received from %v topic with value %v", m.Topic, string(m.Value))
 
 	var location Location
-	if err := location.UnmarshalBinary(m.Value); err != nil {
+	if err = location.UnmarshalBinary(m.Value); err != nil {
 		return nil, fmt.Errorf("failed to unmarshal location: %v", err)
 	}
+
+	log.Printf("time latency, %s", time.Now().Sub(location.CreatedAt))
+
 	return &location, nil
 }
 
