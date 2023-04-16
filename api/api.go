@@ -9,7 +9,6 @@ import (
 	"log"
 	"net"
 	"os"
-	"strings"
 )
 
 // GrpcSrv server for grpc
@@ -26,16 +25,8 @@ var (
 )
 
 func InjectDependency() {
-	// need to close connection dependency
-	addr := strings.Split(os.Getenv("KAFKA_ADDR"), ";")
-	KafkaReaderLocation = kafka.NewReader(kafka.ReaderConfig{
-		Brokers: addr,
-		Topic:   "location",
-		GroupID: "passenger",
-	})
-
 	// internal dependency
-	locationRepository := location.NewRepository(KafkaReaderLocation)
+	locationRepository := location.NewRepository()
 	locationUseCase := location.NewUseCase(locationRepository)
 	grpcLocationHandler = location.NewHandler(locationUseCase)
 }
