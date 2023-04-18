@@ -4,7 +4,6 @@ import (
 	"fmt"
 	"github.com/TA-Aplikasi-Pengiriman-Barang/passenger-service/grpc/pb"
 	"github.com/TA-Aplikasi-Pengiriman-Barang/passenger-service/internal/location"
-	"github.com/segmentio/kafka-go"
 	"google.golang.org/grpc"
 	"log"
 	"net"
@@ -14,21 +13,14 @@ import (
 // GrpcSrv server for grpc
 var GrpcSrv *grpc.Server
 
-// KafkaReaderLocation external service for kafka reader
-var (
-	KafkaReaderLocation *kafka.Reader
-)
-
 // internal service
 var (
 	grpcLocationHandler *location.Handler
 )
 
-func InjectDependency() {
+func InjectDependency(locationBroadcaster *location.Broadcaster) {
 	// internal dependency
-	locationRepository := location.NewRepository()
-	locationUseCase := location.NewUseCase(locationRepository)
-	grpcLocationHandler = location.NewHandler(locationUseCase)
+	grpcLocationHandler = location.NewHandler(locationBroadcaster)
 }
 
 func InitGRPCServer() {

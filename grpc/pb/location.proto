@@ -3,12 +3,12 @@ package proto;
 option go_package="./pb";
 
 service Location {
-  rpc GetLocation(GetLocationRequest)  returns (stream GetLocationResponse) {}
+  rpc SubscribeLocation(SubscribeLocationRequest)  returns (stream SubscribeLocationResponse) {}
 }
 
-message GetLocationRequest {}
+message SubscribeLocationRequest {}
 
-message GetLocationResponse {
+message SubscribeLocationResponse {
   string long = 1;
   string lat = 2;
   string created_at = 3;

@@ -19,14 +19,14 @@ import (
 const _ = grpc.SupportPackageIsVersion7
 
 const (
-	Location_GetLocation_FullMethodName = "/proto.Location/GetLocation"
+	Location_SubscribeLocation_FullMethodName = "/proto.Location/SubscribeLocation"
 )
 
 // LocationClient is the client API for Location service.
 //
 // For semantics around ctx use and closing/ending streaming RPCs, please refer to https://pkg.go.dev/google.golang.org/grpc/?tab=doc#ClientConn.NewStream.
 type LocationClient interface {
-	GetLocation(ctx context.Context, in *GetLocationRequest, opts ...grpc.CallOption) (Location_GetLocationClient, error)
+	SubscribeLocation(ctx context.Context, in *SubscribeLocationRequest, opts ...grpc.CallOption) (Location_SubscribeLocationClient, error)
 }
 
 type locationClient struct {
@@ -37,12 +37,12 @@ func NewLocationClient(cc grpc.ClientConnInterface) LocationClient {
 	return &locationClient{cc}
 }
 
-func (c *locationClient) GetLocation(ctx context.Context, in *GetLocationRequest, opts ...grpc.CallOption) (Location_GetLocationClient, error) {
-	stream, err := c.cc.NewStream(ctx, &Location_ServiceDesc.Streams[0], Location_GetLocation_FullMethodName, opts...)
+func (c *locationClient) SubscribeLocation(ctx context.Context, in *SubscribeLocationRequest, opts ...grpc.CallOption) (Location_SubscribeLocationClient, error) {
+	stream, err := c.cc.NewStream(ctx, &Location_ServiceDesc.Streams[0], Location_SubscribeLocation_FullMethodName, opts...)
 	if err != nil {
 		return nil, err
 	}
-	x := &locationGetLocationClient{stream}
+	x := &locationSubscribeLocationClient{stream}
 	if err := x.ClientStream.SendMsg(in); err != nil {
 		return nil, err
 	}
@@ -52,17 +52,17 @@ func (c *locationClient) GetLocation(ctx context.Context, in *GetLocationRequest
 	return x, nil
 }
 
-type Location_GetLocationClient interface {
-	Recv() (*GetLocationResponse, error)
+type Location_SubscribeLocationClient interface {
+	Recv() (*SubscribeLocationResponse, error)
 	grpc.ClientStream
 }
 
-type locationGetLocationClient struct {
+type locationSubscribeLocationClient struct {
 	grpc.ClientStream
 }
 
-func (x *locationGetLocationClient) Recv() (*GetLocationResponse, error) {
-	m := new(GetLocationResponse)
+func (x *locationSubscribeLocationClient) Recv() (*SubscribeLocationResponse, error) {
+	m := new(SubscribeLocationResponse)
 	if err := x.ClientStream.RecvMsg(m); err != nil {
 		return nil, err
 	}
@@ -73,7 +73,7 @@ func (x *locationGetLocationClient) Recv() (*GetLocationResponse, error) {
 // All implementations must embed UnimplementedLocationServer
 // for forward compatibility
 type LocationServer interface {
-	GetLocation(*GetLocationRequest, Location_GetLocationServer) error
+	SubscribeLocation(*SubscribeLocationRequest, Location_SubscribeLocationServer) error
 	mustEmbedUnimplementedLocationServer()
 }
 
@@ -81,8 +81,8 @@ type LocationServer interface {
 type UnimplementedLocationServer struct {
 }
 
-func (UnimplementedLocationServer) GetLocation(*GetLocationRequest, Location_GetLocationServer) error {
-	return status.Errorf(codes.Unimplemented, "method GetLocation not implemented")
+func (UnimplementedLocationServer) SubscribeLocation(*SubscribeLocationRequest, Location_SubscribeLocationServer) error {
+	return status.Errorf(codes.Unimplemented, "method SubscribeLocation not implemented")
 }
 func (UnimplementedLocationServer) mustEmbedUnimplementedLocationServer() {}
 
@@ -97,24 +97,24 @@ func RegisterLocationServer(s grpc.ServiceRegistrar, srv LocationServer) {
 	s.RegisterService(&Location_ServiceDesc, srv)
 }
 
-func _Location_GetLocation_Handler(srv interface{}, stream grpc.ServerStream) error {
-	m := new(GetLocationRequest)
+func _Location_SubscribeLocation_Handler(srv interface{}, stream grpc.ServerStream) error {
+	m := new(SubscribeLocationRequest)
 	if err := stream.RecvMsg(m); err != nil {
 		return err
 	}
-	return srv.(LocationServer).GetLocation(m, &locationGetLocationServer{stream})
+	return srv.(LocationServer).SubscribeLocation(m, &locationSubscribeLocationServer{stream})
 }
 
-type Location_GetLocationServer interface {
-	Send(*GetLocationResponse) error
+type Location_SubscribeLocationServer interface {
+	Send(*SubscribeLocationResponse) error
 	grpc.ServerStream
 }
 
-type locationGetLocationServer struct {
+type locationSubscribeLocationServer struct {
 	grpc.ServerStream
 }
 
-func (x *locationGetLocationServer) Send(m *GetLocationResponse) error {
+func (x *locationSubscribeLocationServer) Send(m *SubscribeLocationResponse) error {
 	return x.ServerStream.SendMsg(m)
 }
 
@@ -127,8 +127,8 @@ var Location_ServiceDesc = grpc.ServiceDesc{
 	Methods:     []grpc.MethodDesc{},
 	Streams: []grpc.StreamDesc{
 		{
-			StreamName:    "GetLocation",
-			Handler:       _Location_GetLocation_Handler,
+			StreamName:    "SubscribeLocation",
+			Handler:       _Location_SubscribeLocation_Handler,
 			ServerStreams: true,
 		},
 	},
