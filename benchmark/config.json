@@ -1,0 +1,8 @@
+{
+  "insecure" : true,
+  "proto": "./grpc/pb/location.proto",
+  "call": "proto.Location.SubscribeLocation",
+  "stream-call-count": 5000,
+  "concurrency": 5000,
+  "host": "104.197.179.80:80"
+}

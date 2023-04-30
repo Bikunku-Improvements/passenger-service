@@ -7,12 +7,12 @@ import (
 	"sync"
 )
 
-func NewSarama() (sarama.ConsumerGroup, error) {
+func NewSarama(brokerID []string) (sarama.ConsumerGroup, error) {
 	config := sarama.NewConfig()
 	config.Consumer.Return.Errors = true
 	config.Consumer.Offsets.Initial = sarama.OffsetNewest
-	brokers := []string{"localhost:9092", "localhost:9093", "localhost:9094"}
-	groupID := "location-consumer-group"
+	brokers := brokerID
+	groupID := "location-consumer-group-1"
 
 	log.Println("Starting a new Sarama consumer")
 
@@ -33,7 +33,7 @@ func Consume(ctx context.Context, client sarama.ConsumerGroup, consumer *Handler
 			// `Consume` should be called inside an infinite loop, when a
 			// server-side rebalance happens, the consumer session will need to be
 			// recreated to get the new claims
-			if err := client.Consume(ctx, []string{"location-2"}, consumer); err != nil {
+			if err := client.Consume(ctx, []string{"location"}, consumer); err != nil {
 				log.Panicf("Error from consumer: %v", err)
 			}
 

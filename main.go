@@ -8,7 +8,9 @@ import (
 	"github.com/TA-Aplikasi-Pengiriman-Barang/passenger-service/internal/location"
 	"github.com/joho/godotenv"
 	"log"
+	"os"
 	"os/signal"
+	"strings"
 	"syscall"
 )
 
@@ -22,7 +24,8 @@ func main() {
 	}
 
 	// start consumer
-	consumerGroup, err := consumer.NewSarama()
+	broker := strings.Split(os.Getenv("KAFKA_ADDR"), ";")
+	consumerGroup, err := consumer.NewSarama(broker)
 	if err != nil {
 		log.Panicf("failed to init sarama consumer: %v", err)
 	}
