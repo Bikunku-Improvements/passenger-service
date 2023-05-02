@@ -56,14 +56,13 @@ func (b *Broadcaster) Broadcast(consumer consumer.Handler) error {
 			return err
 		}
 
-		log.Printf("message received with latency: %s", time.Now().Sub(loc.CreatedAt))
-
 		b.sync.Lock()
 		for _, stream := range b.clientStream {
+			log.Printf("message received with latency: %s", time.Now().Sub(loc.CreatedAt))
 			err := stream.Send(&pb.SubscribeLocationResponse{
 				Long:      loc.Long,
 				Lat:       loc.Lat,
-				CreatedAt: loc.CreatedAt.Format(time.RFC3339),
+				CreatedAt: loc.CreatedAt.Format(time.RFC3339Nano),
 				BusId:     loc.BusID,
 			})
 
