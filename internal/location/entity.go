@@ -11,20 +11,18 @@ import (
 	"time"
 )
 
-type Location struct {
-	Long      string    `json:"long"`
-	Lat       string    `json:"lat"`
-	BusID     string    `json:"bus_id"`
+type Event struct {
+	BusID     uint      `json:"bus_id"`
+	Number    int       `json:"number"`
+	Plate     string    `json:"plate"`
+	Status    string    `json:"status"`
+	Route     string    `json:"route"`
+	IsActive  bool      `json:"isActive"`
+	Long      float64   `json:"long"`
+	Lat       float64   `json:"lat"`
+	Speed     float64   `json:"speed"`
+	Heading   float64   `json:"heading"`
 	CreatedAt time.Time `json:"created_at"`
-}
-
-func (l *Location) UnmarshalBinary(data []byte) error {
-	err := json.Unmarshal(data, l)
-	if err != nil {
-		return err
-	}
-
-	return nil
 }
 
 type Broadcaster struct {
@@ -50,8 +48,8 @@ func (b *Broadcaster) Broadcast(consumer consumer.Handler) error {
 	for {
 		msg := <-consumer.Message
 
-		var loc Location
-		err := loc.UnmarshalBinary(msg.Value)
+		var loc Event
+		err := json.Unmarshal(msg.Value, &loc)
 		if err != nil {
 			return err
 		}
@@ -60,10 +58,17 @@ func (b *Broadcaster) Broadcast(consumer consumer.Handler) error {
 		for _, stream := range b.clientStream {
 			log.Printf("message received with latency: %s", time.Now().Sub(loc.CreatedAt))
 			err := stream.Send(&pb.SubscribeLocationResponse{
-				Long:      loc.Long,
-				Lat:       loc.Lat,
+				BusId:     uint64(loc.BusID),
+				Number:    int64(loc.Number),
+				Plate:     loc.Plate,
+				Status:    loc.Status,
+				Route:     loc.Route,
+				IsActive:  loc.IsActive,
+				Long:      float32(loc.Long),
+				Lat:       float32(loc.Lat),
+				Speed:     float32(loc.Speed),
+				Heading:   float32(loc.Heading),
 				CreatedAt: loc.CreatedAt.Format(time.RFC3339Nano),
-				BusId:     loc.BusID,
 			})
 
 			if s, ok := status.FromError(err); ok {
