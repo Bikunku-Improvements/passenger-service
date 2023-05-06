@@ -44,14 +44,14 @@ func (b *Broadcaster) Unsubscribe(id string) {
 	b.sync.Unlock()
 }
 
-func (b *Broadcaster) Broadcast(consumer consumer.Handler) error {
+func (b *Broadcaster) Broadcast(consumer consumer.Handler) {
 	for {
 		msg := <-consumer.Message
 
 		var loc Event
 		err := json.Unmarshal(msg.Value, &loc)
 		if err != nil {
-			return err
+			log.Printf("failed to marshal data: %v\n", err.Error())
 		}
 
 		b.sync.Lock()
@@ -78,7 +78,7 @@ func (b *Broadcaster) Broadcast(consumer consumer.Handler) error {
 				case codes.Unavailable, codes.Canceled, codes.DeadlineExceeded:
 					// log.Println("client terminated")
 				default:
-					return err
+					log.Printf("error from grpc: %v\n", err.Error())
 				}
 			}
 		}

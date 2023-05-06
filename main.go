@@ -31,21 +31,11 @@ func main() {
 	}
 
 	saramaHandler := consumer.NewHandler()
-	go func(consumerGroup sarama.ConsumerGroup, handler *consumer.Handler) {
-		consumer.Consume(ctx, consumerGroup, handler)
-		if err != nil {
-			log.Panicf("failed to consumer message: %v", err)
-		}
-	}(consumerGroup, saramaHandler)
+	go consumer.Consume(ctx, consumerGroup, saramaHandler)
 
 	// start broadcaster
 	broadcastHandler := location.NewBroadcaster()
-	go func(broadcastHandler *location.Broadcaster, consumerHandler consumer.Handler) {
-		err := broadcastHandler.Broadcast(consumerHandler)
-		if err != nil {
-			log.Panicf("failed to start broadcast: %v", err)
-		}
-	}(broadcastHandler, *saramaHandler)
+	go broadcastHandler.Broadcast(*saramaHandler)
 
 	// start grpc server
 	go func(broadcaster *location.Broadcaster) {
