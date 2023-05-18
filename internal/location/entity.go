@@ -2,8 +2,8 @@ package location
 
 import (
 	"encoding/json"
+	"github.com/Shopify/sarama"
 	"github.com/TA-Aplikasi-Pengiriman-Barang/passenger-service/grpc/pb"
-	"github.com/TA-Aplikasi-Pengiriman-Barang/passenger-service/internal/consumer"
 	"google.golang.org/grpc/codes"
 	"google.golang.org/grpc/status"
 	"log"
@@ -44,12 +44,10 @@ func (b *Broadcaster) Unsubscribe(id string) {
 	b.sync.Unlock()
 }
 
-func (b *Broadcaster) Broadcast(consumer consumer.Handler) {
-	for {
-		msg := <-consumer.Message
-
+func (b *Broadcaster) Broadcast(msgChan chan *sarama.ConsumerMessage) {
+	for v := range msgChan {
 		var loc Event
-		err := json.Unmarshal(msg.Value, &loc)
+		err := json.Unmarshal(v.Value, &loc)
 		if err != nil {
 			log.Printf("failed to marshal data: %v\n", err.Error())
 		}

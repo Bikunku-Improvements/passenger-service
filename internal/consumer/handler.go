@@ -1,14 +1,17 @@
 package consumer
 
-import "github.com/Shopify/sarama"
+import (
+	"github.com/Shopify/sarama"
+	"github.com/TA-Aplikasi-Pengiriman-Barang/passenger-service/internal/location"
+)
 
 type Handler struct {
-	ready   chan bool
-	Message chan *sarama.ConsumerMessage
+	Hub   *location.Hub
+	Ready chan bool
 }
 
 func (c *Handler) Setup(_ sarama.ConsumerGroupSession) error {
-	close(c.ready)
+	close(c.Ready)
 	return nil
 }
 
@@ -19,16 +22,10 @@ func (c *Handler) ConsumeClaim(session sarama.ConsumerGroupSession, claim sarama
 		select {
 		case message := <-claim.Messages():
 			session.MarkMessage(message, "")
-			c.Message <- message
+			c.Hub.Broadcast <- message.Value
+
 		case <-session.Context().Done():
 			return nil
 		}
-	}
-}
-
-func NewHandler() *Handler {
-	return &Handler{
-		ready:   make(chan bool),
-		Message: make(chan *sarama.ConsumerMessage),
 	}
 }

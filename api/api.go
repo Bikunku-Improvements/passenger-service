@@ -2,6 +2,7 @@ package api
 
 import (
 	"fmt"
+	"github.com/Shopify/sarama"
 	"github.com/TA-Aplikasi-Pengiriman-Barang/passenger-service/grpc/pb"
 	"github.com/TA-Aplikasi-Pengiriman-Barang/passenger-service/internal/location"
 	"google.golang.org/grpc"
@@ -18,9 +19,9 @@ var (
 	grpcLocationHandler *location.Handler
 )
 
-func InjectDependency(locationBroadcaster *location.Broadcaster) {
+func InjectDependency(locationHub *location.Hub, consumerGroup sarama.ConsumerGroup) {
 	// internal dependency
-	grpcLocationHandler = location.NewHandler(locationBroadcaster)
+	grpcLocationHandler = location.NewHandler(locationHub, consumerGroup)
 }
 
 func InitGRPCServer() {

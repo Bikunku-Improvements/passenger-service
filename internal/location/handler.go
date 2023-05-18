@@ -1,27 +1,31 @@
 package location
 
 import (
+	"github.com/Shopify/sarama"
 	"github.com/TA-Aplikasi-Pengiriman-Barang/passenger-service/grpc/pb"
-	"github.com/google/uuid"
 )
 
 type Handler struct {
 	pb.UnimplementedLocationServer
-	broadcaster *Broadcaster
+	hub *Hub
+	cg  sarama.ConsumerGroup
 }
 
 func (h *Handler) SubscribeLocation(req *pb.SubscribeLocationRequest, stream pb.Location_SubscribeLocationServer) error {
-	requestID := uuid.NewString()
+	client := &Client{hub: h.hub, conn: stream, send: make(chan []byte, 256)}
+	client.hub.register <- client
 
-	h.broadcaster.Subscribe(stream, requestID)
+	go client.writePump()
+
 	<-stream.Context().Done()
-	h.broadcaster.Unsubscribe(requestID)
+	client.hub.unregister <- client
 
 	return nil
 }
 
-func NewHandler(broadcaster *Broadcaster) *Handler {
+func NewHandler(hub *Hub, cg sarama.ConsumerGroup) *Handler {
 	return &Handler{
-		broadcaster: broadcaster,
+		hub: hub,
+		cg:  cg,
 	}
 }

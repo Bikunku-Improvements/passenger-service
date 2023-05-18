@@ -2,7 +2,6 @@ package main
 
 import (
 	"context"
-	"github.com/Shopify/sarama"
 	"github.com/TA-Aplikasi-Pengiriman-Barang/passenger-service/api"
 	"github.com/TA-Aplikasi-Pengiriman-Barang/passenger-service/internal/consumer"
 	"github.com/TA-Aplikasi-Pengiriman-Barang/passenger-service/internal/location"
@@ -23,6 +22,9 @@ func main() {
 		log.Println("Error loading .env file")
 	}
 
+	hub := location.NewHub()
+	go hub.Run()
+
 	// start consumer
 	broker := strings.Split(os.Getenv("KAFKA_ADDR"), ";")
 	consumerGroup, err := consumer.NewSarama(broker)
@@ -30,31 +32,22 @@ func main() {
 		log.Panicf("failed to init sarama consumer: %v", err)
 	}
 
-	saramaHandler := consumer.NewHandler()
-	go consumer.Consume(ctx, consumerGroup, saramaHandler)
-
-	// start broadcaster
-	broadcastHandler := location.NewBroadcaster()
-	go broadcastHandler.Broadcast(*saramaHandler)
+	go consumer.Consume(context.Background(), consumerGroup, consumer.Handler{Hub: hub, Ready: make(chan bool)})
 
 	// start grpc server
-	go func(broadcaster *location.Broadcaster) {
-		api.InjectDependency(broadcaster)
+	go func() {
+		api.InjectDependency(hub, consumerGroup)
 		api.InitGRPCServer()
 		api.StartGRPCServer()
-	}(broadcastHandler)
+	}()
 
 	<-ctx.Done()
 	stop()
 
-	defer func(consumerGroup sarama.ConsumerGroup, handler *consumer.Handler) {
+	defer func() {
 		log.Printf("closing consumer...")
-		err = consumerGroup.Close()
-		close(handler.Message)
-		if err != nil {
-			log.Printf("failed to close consumer: %v", err)
-		}
-	}(consumerGroup, saramaHandler)
+		consumerGroup.Close()
+	}()
 
 	defer func() {
 		log.Printf("closing grpc server...")
