@@ -15,7 +15,7 @@ func (h *Handler) SubscribeLocation(req *pb.SubscribeLocationRequest, stream pb.
 	client := &Client{hub: h.hub, conn: stream, send: make(chan []byte, 256)}
 	client.hub.register <- client
 
-	go client.writePump()
+	client.writePump()
 
 	<-stream.Context().Done()
 	client.hub.unregister <- client

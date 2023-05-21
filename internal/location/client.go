@@ -19,34 +19,6 @@ type Client struct {
 	send chan []byte
 }
 
-//func (c *Client) SetReady(bool chan bool) {
-//	c.ready = bool
-//}
-//
-//func (c *Client) GetReady() chan bool {
-//	return c.ready
-//}
-//
-//func (c *Client) Setup(_ sarama.ConsumerGroupSession) error {
-//	close(c.ready)
-//	return nil
-//}
-//
-//func (c *Client) Cleanup(_ sarama.ConsumerGroupSession) error { return nil }
-//
-//func (c *Client) ConsumeClaim(session sarama.ConsumerGroupSession, claim sarama.ConsumerGroupClaim) error {
-//	for {
-//		select {
-//		case message := <-claim.Messages():
-//			session.MarkMessage(message, "")
-//			c.hub.Broadcast <- message.Value
-//
-//		case <-session.Context().Done():
-//			return nil
-//		}
-//	}
-//}
-
 func (c *Client) writePump() {
 	for v := range c.send {
 		var loc Event
@@ -75,7 +47,7 @@ func (c *Client) writePump() {
 			case codes.OK:
 				// do nothing
 			case codes.Unavailable, codes.Canceled, codes.DeadlineExceeded:
-				// log.Println("client terminated")
+				return
 			default:
 				log.Printf("error from grpc: %v\n", err.Error())
 			}
