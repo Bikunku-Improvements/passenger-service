@@ -2,6 +2,7 @@ package consumer
 
 import (
 	"context"
+	"crypto/tls"
 	"github.com/Shopify/sarama"
 	"log"
 	"sync"
@@ -13,10 +14,22 @@ type ConsumerGroup interface {
 	GetReady() chan bool
 }
 
-func NewSarama(brokerID []string) (sarama.ConsumerGroup, error) {
+func NewSarama(brokerID []string, username, password string) (sarama.ConsumerGroup, error) {
 	config := sarama.NewConfig()
 	config.Consumer.Return.Errors = true
 	config.Consumer.Offsets.Initial = sarama.OffsetNewest
+
+	config.Net.SASL.Enable = true
+	config.Net.SASL.User = username
+	config.Net.SASL.Password = password
+	config.Net.SASL.Handshake = true
+	config.Net.SASL.SCRAMClientGeneratorFunc = func() sarama.SCRAMClient { return &XDGSCRAMClient{HashGeneratorFcn: SHA256} }
+	config.Net.SASL.Mechanism = sarama.SASLTypeSCRAMSHA256
+
+	tlsConfig := tls.Config{}
+	config.Net.TLS.Enable = true
+	config.Net.TLS.Config = &tlsConfig
+
 	brokers := brokerID
 	groupID := "location-consumer-group-1"
 

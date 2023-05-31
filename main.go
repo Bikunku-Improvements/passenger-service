@@ -27,7 +27,9 @@ func main() {
 
 	// start consumer
 	broker := strings.Split(os.Getenv("KAFKA_ADDR"), ";")
-	consumerGroup, err := consumer.NewSarama(broker)
+	username := os.Getenv("KAFKA_USERNAME")
+	password := os.Getenv("KAFKA_PASSWORD")
+	consumerGroup, err := consumer.NewSarama(broker, username, password)
 	if err != nil {
 		log.Panicf("failed to init sarama consumer: %v", err)
 	}
