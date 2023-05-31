@@ -3,7 +3,7 @@ WORKDIR /app
 
 # Download Depedency
 COPY go.* ./
-RUN go mod download
+RUN go mod tidy
 
 # Copy Source Code to Container
 COPY . ./
