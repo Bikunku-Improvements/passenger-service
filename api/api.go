@@ -5,8 +5,9 @@ import (
 	"github.com/Shopify/sarama"
 	"github.com/TA-Aplikasi-Pengiriman-Barang/passenger-service/grpc/pb"
 	"github.com/TA-Aplikasi-Pengiriman-Barang/passenger-service/internal/location"
+	"github.com/TA-Aplikasi-Pengiriman-Barang/passenger-service/internal/logger"
+	"go.uber.org/zap"
 	"google.golang.org/grpc"
-	"log"
 	"net"
 	"os"
 )
@@ -34,11 +35,11 @@ func InitGRPCServer() {
 func StartGRPCServer() {
 	lis, err := net.Listen("tcp", fmt.Sprintf(":%s", os.Getenv("PORT")))
 	if err != nil {
-		log.Fatalf("failed to listen: %v", err)
+		logger.Logger.Fatal("failed to listen tcp", zap.Error(err))
 	}
 
-	log.Printf("server listening at %v", lis.Addr())
-	if err := GrpcSrv.Serve(lis); err != nil {
-		log.Fatalf("failed to serve: %v", err)
+	logger.Logger.Info("starting server", zap.String("port", lis.Addr().String()))
+	if err = GrpcSrv.Serve(lis); err != nil {
+		logger.Logger.Fatal("failed to server grpc server", zap.Error(err))
 	}
 }

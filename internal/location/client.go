@@ -3,9 +3,10 @@ package location
 import (
 	"encoding/json"
 	"github.com/TA-Aplikasi-Pengiriman-Barang/passenger-service/grpc/pb"
+	"github.com/TA-Aplikasi-Pengiriman-Barang/passenger-service/internal/logger"
+	"go.uber.org/zap"
 	"google.golang.org/grpc/codes"
 	"google.golang.org/grpc/status"
-	"log"
 	"time"
 )
 
@@ -24,10 +25,10 @@ func (c *Client) writePump() {
 		var loc Event
 		err := json.Unmarshal(v, &loc)
 		if err != nil {
-			log.Printf("failed to marshal data: %v\n", err.Error())
+			logger.Logger.Error("failed to marshal data", zap.Error(err))
 		}
 
-		log.Printf("message received with latency: %s", time.Now().Sub(loc.CreatedAt))
+		logger.Logger.Info("message receive", zap.Duration("latency", time.Now().Sub(loc.CreatedAt)))
 		err = c.conn.Send(&pb.SubscribeLocationResponse{
 			BusId:     uint64(loc.BusID),
 			Number:    int64(loc.Number),
@@ -49,7 +50,7 @@ func (c *Client) writePump() {
 			case codes.Unavailable, codes.Canceled, codes.DeadlineExceeded:
 				return
 			default:
-				log.Printf("error from grpc: %v\n", err.Error())
+				logger.Logger.Error("error from grpc", zap.Error(err))
 			}
 		}
 	}

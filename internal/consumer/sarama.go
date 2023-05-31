@@ -4,7 +4,9 @@ import (
 	"context"
 	"crypto/tls"
 	"github.com/Shopify/sarama"
-	"log"
+	"github.com/TA-Aplikasi-Pengiriman-Barang/passenger-service/internal/logger"
+	"go.uber.org/zap"
+	"strings"
 	"sync"
 )
 
@@ -33,7 +35,7 @@ func NewSarama(brokerID []string, username, password string) (sarama.ConsumerGro
 	brokers := brokerID
 	groupID := "location-consumer-group-1"
 
-	log.Printf("Starting a new Sarama consumer with broker: %v\n", brokers)
+	logger.Logger.Info("starting consumer", zap.String("brokers", strings.Join(brokers, ";")))
 
 	client, err := sarama.NewConsumerGroup(brokers, groupID, config)
 	if err != nil {
@@ -53,7 +55,7 @@ func Consume(ctx context.Context, client sarama.ConsumerGroup, consumer Handler)
 			// server-side rebalance happens, the consumer session will need to be
 			// recreated to get the new claims
 			if err := client.Consume(ctx, []string{"location"}, &consumer); err != nil {
-				log.Panicf("Error from consumer: %v", err)
+				logger.Logger.Fatal("error when consume message", zap.Error(err))
 			}
 
 			// check if context was cancelled, signaling that the consumer should stop
@@ -65,5 +67,5 @@ func Consume(ctx context.Context, client sarama.ConsumerGroup, consumer Handler)
 	}()
 
 	<-consumer.Ready // Await till the consumer has been set up
-	log.Println("Sarama consumer up and running!...")
+	logger.Logger.Info("consumer up and running")
 }
