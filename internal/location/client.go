@@ -27,7 +27,7 @@ func (c *Client) writePump() {
 			log.Printf("failed to marshal data: %v\n", err.Error())
 		}
 
-		log.Printf("message received with latency: %s", time.Now().Sub(loc.CreatedAt))
+		// log.Printf("message received with latency: %s", time.Now().Sub(loc.CreatedAt))
 		err = c.conn.Send(&pb.SubscribeLocationResponse{
 			BusId:     uint64(loc.BusID),
 			Number:    int64(loc.Number),
